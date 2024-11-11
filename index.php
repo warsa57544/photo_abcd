@@ -18,5 +18,9 @@
 
         <input type="submit" value="Search">
     </form>
+
+    <!-- Link to view only public blogs -->
+    <br><br>
+    <a href="view_public_blogs.php">View Public Blogs</a>
 </body>
 </html>
