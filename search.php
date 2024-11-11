@@ -1,29 +1,33 @@
 <?php
-include 'db_connect.php'; // Ensure this line is correct and matches the location of db_connect.php
+include 'db_connect.php'; // Make sure db_connect.php has the correct database connection
 
-// Your existing code to handle the search and filter
+// Retrieve search parameters
 $search_letter = isset($_GET['letter']) ? $_GET['letter'] : '';
 $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
 
-// Example query execution
-$query = "SELECT * FROM blogs WHERE 1=1";
+// Initialize the query with the privacy filter
+$query = "SELECT * FROM blogs WHERE privacy = 'public'";
 
+// Add letter search if specified
 if ($search_letter) {
-    $query .= " AND title LIKE '$search_letter%'";
-}
-if ($start_date && $end_date) {
-    $query .= " AND event_date BETWEEN '$start_date' AND '$end_date'";
+    $query .= " AND title LIKE '" . $conn->real_escape_string($search_letter) . "%'";
 }
 
+// Add date range filter if both dates are provided
+if ($start_date && $end_date) {
+    $query .= " AND event_date BETWEEN '" . $conn->real_escape_string($start_date) . "' AND '" . $conn->real_escape_string($end_date) . "'";
+}
+
+// Execute the query
 $result = $conn->query($query);
 
 if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         echo "<div>";
-        echo "<h2>" . $row['title'] . "</h2>";
-        echo "<p>" . $row['description'] . "</p>";
-        echo "<p><strong>Date of Event:</strong> " . $row['event_date'] . "</p>";
+        echo "<h2>" . htmlspecialchars($row['title']) . "</h2>";
+        echo "<p>" . htmlspecialchars($row['description']) . "</p>";
+        echo "<p><strong>Date of Event:</strong> " . htmlspecialchars($row['event_date']) . "</p>";
         echo "</div>";
     }
 } else {
