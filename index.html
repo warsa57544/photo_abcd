@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Create Custom Alphabet Book</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Create a New Blog Post</h2>
+        <form id="blogForm" action="submit_post.php" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="creatorEmail">Creator (Email):</label>
+                <input type="email" id="creatorEmail" name="creatorEmail" required readonly>
+            </div>
+            <div class="form-group">
+                <label for="letter">Select Letter:</label>
+                <select id="letter" name="letter" required>
+                    <option value="" disabled selected>Select a letter</option>
+                    <!-- Generate options for all 26 letters of the alphabet -->
+                    <script>
+                        for (let i = 65; i <= 90; i++) {
+                            document.write(`<option value="${String.fromCharCode(i)}">${String.fromCharCode(i)}</option>`);
+                        }
+                    </script>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="title">Blog Title (Must start with selected letter):</label>
+                <input type="text" id="title" name="title" pattern="^[A-Za-z].*" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description/Story:</label>
+                <textarea id="description" name="description" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="photoUpload">Upload Photos:</label>
+                <input type="file" id="photoUpload" name="photos[]" accept="image/*" multiple>
+            </div>
+            <div class="form-group">
+                <label for="eventDate">Date of Event:</label>
+                <input type="date" id="eventDate" name="eventDate" required>
+            </div>
+            <div class="form-group">
+                <label for="privacyFilter">Privacy Filter:</label>
+                <select id="privacyFilter" name="privacyFilter">
+                    <option value="private" selected>Private</option>
+                    <option value="public">Public</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="submit">Create Blog Post</button>
+            </div>
+            <input type="hidden" id="blogCreationDate" name="blogCreationDate">
+            <input type="hidden" id="blogModificationDate" name="blogModificationDate">
+        </form>
+
+        <h3>Progress Overview</h3>
+        <div class="progress-container">
+            <label for="overallProgress">Overall Completion Progress:</label>
+            <progress id="overallProgress" value="0" max="26"></progress>
+            <span id="overallProgressText">0/26 Completed</span>
+        </div>
+
+        <div id="letterProgressContainer">
+            <!-- Progress bars for each letter -->
+            <script>
+                for (let i = 65; i <= 90; i++) {
+                    document.write(`
+                        <div class="progress-container">
+                            <label for="progress${String.fromCharCode(i)}">${String.fromCharCode(i)} Progress:</label>
+                            <progress id="progress${String.fromCharCode(i)}" value="0" max="10"></progress>
+                            <span id="count${String.fromCharCode(i)}">0 stories</span>
+                        </div>
+                    `);
+                }
+            </script>
+        </div>
+
+        <h3>Interactive Dashboard</h3>
+        <div id="dashboard">
+            <div class="dashboard-header">
+                <h4>All Blogs Created</h4>
+                <div class="sort-options">
+                    <label for="sortSelect">Sort By:</label>
+                    <select id="sortSelect">
+                        <option value="date">Date Created</option>
+                        <option value="letter">Alphabet Letter</option>
+                    </select>
+                </div>
+            </div>
+            <div id="blogList">
+                <!-- Blog entries will be dynamically generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailField = document.getElementById('creatorEmail');
+            const loggedInUserEmail = "user@example.com"; // Placeholder for user's logged-in email, should be replaced by actual logged-in user email from session
+            emailField.value = loggedInUserEmail;
+
+            const blogCreationDateField = document.getElementById('blogCreationDate');
+            const blogModificationDateField = document.getElementById('blogModificationDate');
+            const currentTimestamp = new Date().toISOString();
+            blogCreationDateField.value = currentTimestamp;
+            blogModificationDateField.value = currentTimestamp;
+        });
+
+        document.getElementById('blogForm').addEventListener('submit', function(event) {
+            const selectedLetter = document.getElementById('letter').value;
+            const titleField = document.getElementById('title');
+            if (titleField.value[0].toUpperCase() !== selectedLetter.toUpperCase()) {
+                event.preventDefault();
+                alert('The blog title must start with the selected letter.');
+            } else {
+                const blogModificationDateField = document.getElementById('blogModificationDate');
+                blogModificationDateField.value = new Date().toISOString();
+
+                // Update progress bars dynamically (mocked as example)
+                updateProgress(selectedLetter);
+
+                // Add blog entry to the dashboard (mocked as example)
+                addBlogToDashboard(titleField.value, selectedLetter);
+            }
+        });
+
+        function updateProgress(letter) {
+            // Get the current progress value for the letter
+            const progressElement = document.getElementById(`progress${letter}`);
+            const countElement = document.getElementById(`count${letter}`);
+            let currentCount = parseInt(countElement.textContent);
+            currentCount++;
+            countElement.textContent = `${currentCount} stories`;
+            progressElement.value = currentCount;
+
+            // Update overall progress
+            let overallProgressValue = 0;
+            for (let i = 65; i <= 90; i++) {
+                overallProgressValue += parseInt(document.getElementById(`progress${String.fromCharCode(i)}`).value) > 0 ? 1 : 0;
+            }
+            document.getElementById('overallProgress').value = overallProgressValue;
+            document.getElementById('overallProgressText').textContent = `${overallProgressValue}/26 Completed`;
+        }
+
+        function addBlogToDashboard(title, letter) {
+            const blogList = document.getElementById('blogList');
+            const blogEntry = document.createElement('div');
+            blogEntry.className = 'blog-entry';
+            blogEntry.innerHTML = `<strong>Letter:</strong> ${letter} | <strong>Title:</strong> ${title}`;
+            blogList.appendChild(blogEntry);
+        }
+
+        document.getElementById('sortSelect').addEventListener('change', function() {
+            const sortValue = this.value;
+            const blogList = document.getElementById('blogList');
+            let blogs = Array.from(blogList.getElementsByClassName('blog-entry'));
+            blogs.sort((a, b) => {
+                if (sortValue === 'date') {
+                    return a.dataset.timestamp > b.dataset.timestamp ? 1 : -1;
+                } else if (sortValue === 'letter') {
+                    return a.textContent.localeCompare(b.textContent);
+                }
+            });
+            blogList.innerHTML = '';
+            blogs.forEach(blog => blogList.appendChild(blog));
+        });
+    </script>
+</body>
+</html>
